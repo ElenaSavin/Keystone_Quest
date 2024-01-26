@@ -5,14 +5,6 @@ import json
 import time
 from cdr3 import process_fastq_file
 from fastq_parser import read_sequences_from_csv
-import logging
-
-logging.basicConfig(
-  level=logging.INFO, 
-  format='%(asctime)s - %(levelname)s - %(message)s',
-  filename='development.log',
-  filemode='w'
-)
 
 #token to secured data 
 token_file = "token.txt"

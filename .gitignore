@@ -2,3 +2,5 @@ token.txt
 *.bam
 *.fasta
 *.fastq
+*.log
+*.pyc

@@ -8,6 +8,12 @@ import time
 from memory_profiler import profile
 from io import StringIO
 
+logging.basicConfig(
+  level=logging.INFO, 
+  format='%(asctime)s - %(levelname)s - %(message)s',
+  filename='development.log',
+  filemode='w'
+)
 
 def read_sequences_from_csv(csv_file):
   """
@@ -39,8 +45,9 @@ def read_sequences_from_csv(csv_file):
   return sequence_prefixes
 
 #TODO add as feature flag with number of chars 
+#TODO if filter flag use read from here otherwise do it in workers
 def filter_reads(read, automaton):
-  read_sequence = str(read.seq)
+  read_sequence = str(read.seq.reverse_complement())
   for _, found in automaton.iter(read_sequence):
     return True  # Return True if any substring is found
   return False  # Return False if no substring is found
