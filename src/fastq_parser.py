@@ -69,7 +69,6 @@ def translate_all_orfs_optimized(sequence):
 
   yield protein1, protein2, protein3
 
-
 def chunked_file_reader(file_path, chunk_size):
   with open(file_path, 'r') as file:
     chunk = []
@@ -93,17 +92,25 @@ def read_fastq_in_chunks(chunk, automaton):
     return chunk_records
 
 def reverse_translate(amino_acid_sequence):
-    standard_table = CodonTable.unambiguous_dna_by_id[1]
+  """_summary_
 
-    # Find all codons for each amino acid
-    amino_acid_to_codons = {}
-    for codon, amino_acid in standard_table.forward_table.items():
-        if amino_acid not in amino_acid_to_codons:
-            amino_acid_to_codons[amino_acid] = []
-        amino_acid_to_codons[amino_acid].append(codon)
+  Args:
+      amino_acid_sequence (_type_): _description_
 
-    # Generate all combinations of codons for the amino acid sequence
-    all_codon_combinations = [amino_acid_to_codons[aa] for aa in amino_acid_sequence]
-    possible_dna_sequences = [''.join(codon_combo) for codon_combo in product(*all_codon_combinations)]
+  Returns:
+      _type_: _description_
+  """
+  standard_table = CodonTable.unambiguous_dna_by_id[1]
 
-    return possible_dna_sequences
+  # Find all codons for each amino acid
+  amino_acid_to_codons = {}
+  for codon, amino_acid in standard_table.forward_table.items():
+    if amino_acid not in amino_acid_to_codons:
+      amino_acid_to_codons[amino_acid] = []
+    amino_acid_to_codons[amino_acid].append(codon)
+
+  # Generate all combinations of codons for the amino acid sequence
+  all_codon_combinations = [amino_acid_to_codons[aa] for aa in amino_acid_sequence]
+  possible_dna_sequences = [''.join(codon_combo) for codon_combo in product(*all_codon_combinations)]
+
+  return possible_dna_sequences

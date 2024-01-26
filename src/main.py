@@ -39,14 +39,14 @@ def download(data_endpt, token_string, file_id):
   system(f"samtools bam2fq files/{project}_{file_id}.bam > files/{project}_{file_id}.fastq")
   
 #read the file ids from file
-def match(manifest, target_hashed, file_path):
+def import_files(manifest, file_path):
   start_time = time.time()
   print(f"Processing started at: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}")
   with open(manifest, "r") as file:
     for line in file:
       file_id = line.strip() 
       data_endpt = f"https://api.gdc.cancer.gov/slicing/view/{file_id}"
-      file_path = f"files/first_half_{project}_{file_id}.fastq"
+      #file_path = f"files/{project}_{file_id}.fastq"
       if os.path.exists(file_path):
         print(f"File: {file_id} exists, Skipping Download")
       else:
@@ -60,9 +60,7 @@ def match(manifest, target_hashed, file_path):
             print(f"Temporary DNS resolution error. File {file_id} was not downloaded")
           # Code to retry the operation (e.g., call the function again)
           else:
-            print("A different connection error occurred:", e)
-        
-    process_fastq_file(file, 4000, target_hashed) 
+            print("A different connection error occurred:", e) 
 
   end_time = time.time()  # Record end time
   print(f"Processing finished at: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))}")
@@ -70,8 +68,9 @@ def match(manifest, target_hashed, file_path):
  
 #TODO add logger
 if __name__ == "__main__":
-    target_hashed = read_sequences_from_csv("top_1000.csv")
-    manifest = "brca.txt"  # Replace with your actual FASTQ file name
-    file_path = "files/brca_CD8T_REH_4h_rep1.fastq"
-    match(manifest, target_hashed, file_path)
+  target_hashed = read_sequences_from_csv("top_1000.csv")
+  manifest = "brca.txt"  # Replace with your actual FASTQ file name
+  file_path = "files/brca_CD8T_REH_4h_rep1.fastq"
+  #import_files(manifest, target_hashed, file_path)
+  process_fastq_file(file_path, 4000, target_hashed)
     
