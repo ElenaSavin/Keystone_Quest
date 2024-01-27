@@ -1,1 +1,56 @@
-# cdr3_finder
+# Keystone Quest: A Fast and Accurate RNAseq CDR3 Discovery Tool
+
+## Project Overview
+
+This Python script is designed to efficiently search for target protein sequences within a large FASTQ file, leveraging multiprocessing and Aho-Corasick algorithm for optimized performance. It's specifically tailored for bioinformatics applications, particularly in the context of analyzing genetic data.
+
+## Key Features
+
+Fast and Efficient Searching: Employs the Aho-Corasick algorithm for rapid substring matching, enabling swift identification of target sequences within the FASTQ file.
+Multiprocessing: Utilizes multiprocessing to distribute the workload across multiple CPU cores, significantly accelerating the search process.
+Reverse Translation: Facilitates the search for target protein sequences by reverse translating them into possible DNA sequences, enhancing the flexibility of the search.
+Open Reading Frame Translation: Translates all three possible open reading frames (ORFs) of each sequence, ensuring comprehensive coverage and minimizing the risk of missing relevant matches.
+Clear Logging: Provides detailed logging information, including execution time, file processing progress, target sequence matches, and any errors encountered, aiding in analysis and troubleshooting.
+
+## Requirements
+
+Python 3.x
+
+Biopython
+ahocorasick
+multiprocessing
+concurrent.futures
+logging
+numpy
+
+## Installation
+
+Install the required Python libraries using pip:
+Bash
+```
+pip install requirments.txt
+```
+Use code with caution. Learn more
+## Usage
+
+Prepare a CSV file containing the target protein sequences, with one sequence per row.
+Update the following variables in the script:
+csv_file: Path to the CSV file containing target sequences.
+fastq_file: Path to the FASTQ file to be searched.
+chunk_size: Size of chunks to be processed (adjust based on system resources and file size).
+Run the script:
+Bash
+```
+python process_fastq.py
+```
+
+## Output
+
+The script outputs target sequence matches to the console, logging file, and debugging messages (if enabled).
+Matches include read ID, frame, and original translated sequence.
+
+## Additional Notes
+
+Consider adjusting the chunk_size and num_processes parameters to fine-tune performance for different file sizes and hardware configurations.
+For large FASTQ files, ensure adequate system resources (CPU cores and RAM) to handle the multiprocessing workload.
+The script employs a thread pool for callbacks using concurrent.futures to streamline the output of results.

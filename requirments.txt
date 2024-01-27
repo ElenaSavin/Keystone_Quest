@@ -1,0 +1,6 @@
+Biopython
+ahocorasick
+multiprocessing
+concurrent.futures
+logging
+numpy
