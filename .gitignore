@@ -1,6 +1,6 @@
 token.txt
 *.bam
+*.pyc
 *.fasta
 *.fastq
 *.log
-*.pyc
