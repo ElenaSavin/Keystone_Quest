@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $.Release.Name }}-job-{{ .uuid }}
+spec:
+  template:
+    spec:
+      containers:
+      - name: worker
+        image: your-image:latest
+        command: ["sh", "-c", "echo Processing UUID: {{ .uuid }} && sleep 60"]
+      restartPolicy: OnFailure
+  backoffPolicy:
+    type: BackoffPeriodic
+    periodSeconds: 30
+    maxAttempts: 3
+---
+{{- range .Values.uuids }}
+{{ include "job.yaml" . | indent 2 }}
+{{- end }}

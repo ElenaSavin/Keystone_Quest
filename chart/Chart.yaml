@@ -1,0 +1,5 @@
+name: dynamic-jobs
+version: 1.0.0
+description: Helm chart with a job for each UUID in values.yaml
+source:
+dependencies: []
