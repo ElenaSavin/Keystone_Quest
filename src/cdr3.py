@@ -1,10 +1,12 @@
-from fastq_parser import translate_all_orfs_optimized, chunked_file_reader, read_fastq_in_chunks, read_sequences_from_csv, logging
+from fastq_parser import *
 import time, os
 import ahocorasick
 import multiprocessing
 import concurrent.futures
+import logging
 
-target_hashed = read_sequences_from_csv("top_1000.csv")
+logger = logging.getLogger('main')
+target_cdr3 = read_sequences_from_csv("top_1000.csv")
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   Initialize process worker
@@ -12,7 +14,7 @@ target_hashed = read_sequences_from_csv("top_1000.csv")
 def init_worker():
   global automaton_protein
   automaton_protein = ahocorasick.Automaton()
-  for idx, value in enumerate(target_hashed.keys()):
+  for idx, value in enumerate(target_cdr3.keys()):
     automaton_protein.add_word(value, (idx, value))
   automaton_protein.make_automaton()
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -66,7 +68,7 @@ def custom_callback(chunks):
 #   Main execution 
 # Add error callback to map_async
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def process_fastq_file(file_path, chunk_size, target_hashed):
+def process_fastq_file(file_path, chunk_size, filter = True):
   start_time = time.time()
   total_size = os.path.getsize(file_path)
   bytes_processed = 0
@@ -74,15 +76,20 @@ def process_fastq_file(file_path, chunk_size, target_hashed):
   chunksize = 100
   callback_executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
-  # ----- Aho–Corasick algorithm init for first parse ------------------------------
-  automaton = ahocorasick.Automaton()
+  if filter == True:
+    # ----- Aho–Corasick algorithm init for first parse ------------------------------
+    automaton = ahocorasick.Automaton()
 
-  for seq, info in target_hashed.items():
-    for idx, key in enumerate(info['reverse_translate']):
-      automaton.add_word(key, (idx, key))
+    for seq, info in target_cdr3.items():
+      for idx, key in enumerate(info['reverse_translate']):
+        automaton.add_word(key, (idx, key))
 
-  automaton.make_automaton()
-  # --------------------------------------------------------------------------------
+    automaton.make_automaton()
+    # --------------------------------------------------------------------------------
+  
+  # PHASE 2
+  
+  
   with multiprocessing.Pool(initializer=init_worker) as pool:
     for chunk_str in chunked_file_reader(file_path, chunk_size):
       try:

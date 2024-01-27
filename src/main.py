@@ -1,68 +1,44 @@
-from os import remove, system
+from download import import_files
 import os
-import requests
-import json
-import time
 from cdr3 import process_fastq_file
 from fastq_parser import read_sequences_from_csv
+import argparse
+import logging
 
-#token to secured data 
-token_file = "token.txt"
-project = "brca"
-
-
-def download(data_endpt, token_string, file_id):
-  params = {"gencode": ["BRCA1", "BRCA2"]}
-  response = requests.post(data_endpt, 
-                          data = json.dumps(params), 
-                          headers = {
-                            "Content-Type": "application/json",
-                            "X-Auth-Token": token_string
-                            })
-
-  file_name = f"files/{project}_{file_id}.bam"
-  
-  # Create the "files" directory if it doesn't exist
-  os.makedirs("files", exist_ok=True)  # Create directory only if needed
-
-  with open(file_name, "wb") as output_file:
-    output_file.write(response.content)
-      
-  system(f"samtools bam2fq files/{project}_{file_id}.bam > files/{project}_{file_id}.fastq")
-  
-#read the file ids from file
-def import_files(manifest, file_path):
-  start_time = time.time()
-  print(f"Processing started at: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}")
-  with open(manifest, "r") as file:
-    for line in file:
-      file_id = line.strip() 
-      data_endpt = f"https://api.gdc.cancer.gov/slicing/view/{file_id}"
-      #file_path = f"files/{project}_{file_id}.fastq"
-      if os.path.exists(file_path):
-        print(f"File: {file_id} exists, Skipping Download")
-      else:
-        print(f"Downloading file id: {file_id}")
-        with open(token_file,"r") as token:
-          token_string = str(token.read().strip())
-        try:
-          download(data_endpt, token_string, file_id)
-        except requests.exceptions.ConnectionError as e:
-          if "Temporary failure in name resolution" in str(e):
-            print(f"Temporary DNS resolution error. File {file_id} was not downloaded")
-          # Code to retry the operation (e.g., call the function again)
-          else:
-            print("A different connection error occurred:", e) 
-
-  end_time = time.time()  # Record end time
-  print(f"Processing finished at: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))}")
-  print(f"Total processing time: {end_time - start_time:.2f} seconds")
- 
-#TODO add logger
 if __name__ == "__main__":
-  target_hashed = read_sequences_from_csv("top_1000.csv")
-  manifest = "brca.txt"  # Replace with your actual FASTQ file name
-  file_path = "files/brca_CD8T_REH_4h_rep1.fastq"
-  #import_files(manifest, target_hashed, file_path)
-  process_fastq_file(file_path, 4000, target_hashed)
-    
+  parser = argparse.ArgumentParser(description="This Python script is designed to efficiently search for target protein sequences within a large FASTQ file.")
+  parser.add_argument("-f", "--filepath", metavar="", required=True, type=str, help="Path to the FASTQ files")
+  parser.add_argument("-n", "--filename", metavar="", required=True, type=str, help="File id to download/proccess without ending. mandatory")
+  parser.add_argument("-fi", "--filter", metavar="", required=False, default=True, type=bool, help="Filter the reads before proccessing. true by default.")
+  parser.add_argument("-lp", "--logpath", metavar="", required=False, default="proccess.log", help="specify custom path for logs. Will be the directory of the script by default")
+  parser.add_argument("-d", "--downloadfiles", metavar="", required=False, default=False, help="feature flag for downloading files from tcga. false by default, will take files specified in filespath flag")
+  parser.add_argument("-p", "--project", metavar="", required=False, default="brca", help="TCGA Project to download files from")
+  parser.add_argument("-t", "--tokenpath", metavar="", required=False, default="token.txt", help="TCGA token file path for restricted data acccess. using token.txt in main folder as default")
+  parser.add_argument("-m", "--manifestpath", metavar="", required=False, default="manifest.txt", help="manifest text file containing a list of all file ids to download. using manifest.txt in main folder as default.")
+  
+  args = parser.parse_args()
+  filter = args.filter
+  global logpath
+  logpath = args.logpath
+  download = args.downloadfiles
+  global project 
+  project = args.project
+  file_id = args.filename
+  os.makedirs(f"{args.filepath}/{project}", exist_ok=True)  # Create directory only if needed
+
+  file_path = f"{args.filepath}/{project}/{file_id}"
+
+  token_path = args.tokenpath
+  manifest = args.manifestpath
+  
+  logging.basicConfig(
+  level=logging.INFO, 
+  format='%(asctime)s - %(levelname)s - %(message)s',
+  filename=logpath,
+  filemode='w'
+  )
+  
+  if download:    
+    import_files(file_path, token_path)
+  process_fastq_file(f"{file_path}.fastq", 4000, filter)
+  

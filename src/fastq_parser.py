@@ -1,52 +1,56 @@
 import Bio.SeqIO as SeqIO 
+import logging
 from Bio.Data import CodonTable
 from itertools import product
 import Bio
 import csv
-import logging
 import time
-from memory_profiler import profile
 from io import StringIO
 
-logging.basicConfig(
-  level=logging.INFO, 
-  format='%(asctime)s - %(levelname)s - %(message)s',
-  filename='development.log',
-  filemode='w'
-)
+logger = logging.getLogger('main')
 
 def read_sequences_from_csv(csv_file):
   """
   Reads sequences from a CSV file and returns a dictionary of hashed sequences.
   """
-  start_time = time.time()
   sequence_prefixes = {}
 
   try:
     with open(csv_file, "r") as csvfile:
-        logging.info(f"Reading sequences from {csv_file}")
-        csv_reader = csv.reader(csvfile)
-        next(csv_reader)  # Skip header
+      logger.info(f"Reading sequences from {csv_file}")
+      csv_reader = csv.reader(csvfile)
+      next(csv_reader)  # Skip header
 
-        for row in csv_reader:
-          sequence = row[0]
-          sequence_prefixes[sequence] = {
-            'reverse_translate': reverse_translate(sequence[:4])
-          }
-        
-        logging.info(f"Completed reading and hashing sequences from {csv_file}")
+      for row in csv_reader:
+        sequence = row[0]
+        sequence_prefixes[sequence] = {
+          'reverse_translate': reverse_translate(sequence[:4])
+        }
+      
+      logger.info(f"Completed reading and hashing sequences from {csv_file}")
 
   except IOError as e:
-    logging.error(f"Error reading file {csv_file}: {e}")
-
-  end_time = time.time()
-  print(f"Execution time for reading sequences from {csv_file}: {end_time - start_time} seconds")
+    logger.error(f"Error reading file {csv_file}: {e}")
 
   return sequence_prefixes
+
 
 #TODO add as feature flag with number of chars 
 #TODO if filter flag use read from here otherwise do it in workers
 def filter_reads(read, automaton):
+  """
+  Accepts a prebuilt Trie of all X prefix letters of the target cdr3 sequence.
+  I will search for this prefix in the reads provided reverse complement. 
+  If it will find a match, 
+  Return true will enable this read to continue in proccess as a potential sorce containg a target cdr3
+
+  Args:
+      read (_type_): _description_
+      automaton (_type_): _description_
+
+  Returns:
+      _type_: _description_
+  """
   read_sequence = str(read.seq.reverse_complement())
   for _, found in automaton.iter(read_sequence):
     return True  # Return True if any substring is found
