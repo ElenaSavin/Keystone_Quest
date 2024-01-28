@@ -12,6 +12,11 @@ logger = logging.getLogger('main')
 def read_sequences_from_csv(csv_file):
   """
   Reads sequences from a CSV file and returns a dictionary of hashed sequences.
+  Args:
+    csv_file(str): name of the csv file containing the Keystone sequences.
+  Return:
+    sequence_prefixes(dict): dictionary of sequences, and reverse translated prefixes.
+    
   """
   sequence_prefixes = {}
 
@@ -20,7 +25,9 @@ def read_sequences_from_csv(csv_file):
       logger.info(f"Reading sequences from {csv_file}")
       csv_reader = csv.reader(csvfile)
       next(csv_reader)  # Skip header
-
+      
+      # writing the content to a dictionary - key is the aa sequence value is a key:value pair
+      # key is "reverse_translate" value is first 4 aa reverse tranlated - all options in a list.
       for row in csv_reader:
         sequence = row[0]
         sequence_prefixes[sequence] = {
@@ -45,14 +52,14 @@ def filter_reads(read, automaton):
   Return true will enable this read to continue in proccess as a potential sorce containg a target cdr3
 
   Args:
-      read (_type_): _description_
-      automaton (_type_): _description_
+      read (read object): biopython read object.
+      automaton (object): automaton object.
 
   Returns:
-      _type_: _description_
+      bool: returns true if at least one keystone prefix is found in read. false otherwise
   """
   read_sequence = str(read.seq.reverse_complement())
-  for _, found in automaton.iter(read_sequence):
+  for _, _ in automaton.iter(read_sequence):
     return True  # Return True if any substring is found
   return False  # Return False if no substring is found
 
@@ -81,6 +88,15 @@ def translate_all_orfs_optimized(sequence):
   yield protein1, protein2, protein3
 
 def chunked_file_reader(file_path, chunk_size):
+  """Creating a chunck from full fastq file.
+
+  Args:
+      file_path (str): path of the fastq file.
+      chunk_size (int): number of lines that will compose a chunk.
+
+  Yields:
+      list: returns a list of chuncks.
+  """
   with open(file_path, 'r') as file:
     chunk = []
     line_count = 0
@@ -95,21 +111,30 @@ def chunked_file_reader(file_path, chunk_size):
       yield ''.join(chunk)
 
 def read_fastq_in_chunks(chunk, automaton):
-    handle = StringIO(chunk)  # Convert string chunk to a file-like object
-    chunk_records = []
-    for record in SeqIO.parse(handle, "fastq"):
-      if filter_reads(record, automaton):
-        chunk_records.append(record)
-    return chunk_records
-
-def reverse_translate(amino_acid_sequence):
-  """_summary_
+  """parsing fastq chunck using biopython.
 
   Args:
-      amino_acid_sequence (_type_): _description_
+    chunk (str): string with content of fastq file by chunck size.
+    automaton (object): automaton object.
 
   Returns:
-      _type_: _description_
+      list: list containing all reads from the chunck
+  """
+  handle = StringIO(chunk)  # Convert string chunk to a file-like object
+  chunk_reads = []
+  for read in SeqIO.parse(handle, "fastq"):
+    if filter_reads(read, automaton):
+      chunk_reads.append(read)
+  return chunk_reads
+
+def reverse_translate(amino_acid_sequence):
+  """reverse translate aa and return all possible codons.
+
+  Args:
+    amino_acid_sequence (str): amino acid seq to reerse translate.
+
+  Returns:
+    list: all posible codons list
   """
   standard_table = CodonTable.unambiguous_dna_by_id[1]
 

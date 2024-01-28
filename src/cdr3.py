@@ -12,6 +12,8 @@ target_cdr3 = read_sequences_from_csv("top_1000.csv")
 #   Initialize process worker
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def init_worker():
+  """initialisung worker, creating a list for the automaton.
+  """
   global automaton_protein
   automaton_protein = ahocorasick.Automaton()
   for idx, value in enumerate(target_cdr3.keys()):
@@ -26,14 +28,14 @@ def init_worker():
 #   Process worker
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def process_chunk(read):
-  """_summary_
+  """Searching for the Keystone sequences in the read.
 
   Args:
-      read (Seq object): one string object obtained from fastq
+    read (Seq object): one string object obtained from fastq
 
   Returns:
-     result list: If a sequence is found it will return the read details, 
-     Otherwise will return empty list
+    list: If a sequence is found it will add the read details to results list, 
+    Otherwise will return empty list
   """
   try:
     results = []
@@ -56,6 +58,11 @@ def process_chunk(read):
 # Add lock to write to file 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def custom_callback(chunks):
+  """callback function for the worker proccess.
+
+  Args:
+      chunks (list): list of chuncks resulted from worker.
+  """
   for processed_chunk in chunks:
     for chunk in processed_chunk:
       found, read_id, frame, protein_sequence = chunk
@@ -69,6 +76,13 @@ def custom_callback(chunks):
 # Add error callback to map_async
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def process_fastq_file(file_path, chunk_size, filter = True):
+  """This is the main execution af the search.
+
+  Args:
+    file_path (str): fastq file path
+    chunk_size (int): size of the chunck
+    filter (bool, optional): weather to use filter. Defaults to True.
+  """
   start_time = time.time()
   total_size = os.path.getsize(file_path)
   bytes_processed = 0
@@ -99,7 +113,7 @@ def process_fastq_file(file_path, chunk_size, filter = True):
       except UnicodeDecodeError as e:
         logging.warning(f"UnicodeDecodeError encountered: {e}") 
       
-      filtered_chunk = read_fastq_in_chunks(chunk_str, automaton)
+      filtered_chunk = read_fastq_in_chunks(chunk_str, automaton) #reads from fastq
       if len(filtered_chunk) > 0 :
         result = results = pool.map_async(process_chunk, filtered_chunk, chunksize = chunksize, 
                                           callback=lambda chunks: callback_executor.submit(custom_callback, chunks))

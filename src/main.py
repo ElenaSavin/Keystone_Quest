@@ -6,6 +6,12 @@ import argparse
 import logging
 
 if __name__ == "__main__":
+  """
+  This Python script is designed to efficiently search for target protein sequences within a large FASTQ file.
+  The main is parsing arguments from commandline, setting loggging config and initialise the proccess.
+  This proccess is set to run in a parallel environment therfore accepts only one file at a time.
+  """
+  # Parser
   parser = argparse.ArgumentParser(description="This Python script is designed to efficiently search for target protein sequences within a large FASTQ file.")
   parser.add_argument("-f", "--filepath", metavar="", required=True, type=str, help="Path to the FASTQ files")
   parser.add_argument("-n", "--filename", metavar="", required=True, type=str, help="File id to download/proccess without ending. mandatory")
@@ -16,6 +22,7 @@ if __name__ == "__main__":
   parser.add_argument("-t", "--tokenpath", metavar="", required=False, default="token.txt", help="TCGA token file path for restricted data acccess. using token.txt in main folder as default")
   parser.add_argument("-m", "--manifestpath", metavar="", required=False, default="manifest.txt", help="manifest text file containing a list of all file ids to download. using manifest.txt in main folder as default.")
   
+  # Set varibles from parser
   args = parser.parse_args()
   filter = args.filter
   global logpath
@@ -24,13 +31,14 @@ if __name__ == "__main__":
   global project 
   project = args.project
   file_id = args.filename
+  
+  # Set path to all config/fastq files
   os.makedirs(f"{args.filepath}/{project}", exist_ok=True)  # Create directory only if needed
-
   file_path = f"{args.filepath}/{project}/{file_id}"
-
   token_path = args.tokenpath
   manifest = args.manifestpath
   
+  # Initialise and configure logger
   logging.basicConfig(
   level=logging.INFO, 
   format='%(asctime)s - %(levelname)s - %(message)s',
@@ -38,6 +46,7 @@ if __name__ == "__main__":
   filemode='w'
   )
   
+  # if download flag set to true will download from tcga,  otherwisw will go streight to proccess
   if download:    
     import_files(file_path, token_path)
   process_fastq_file(f"{file_path}.fastq", 4000, filter)

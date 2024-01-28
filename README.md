@@ -15,13 +15,15 @@ Clear Logging: Provides detailed logging information, including execution time, 
 ## Requirements
 
 Python 3.x
+samtools
 
-Biopython
-ahocorasick
-multiprocessing
-concurrent.futures
-logging
-numpy
+python libraries:
+    Biopython
+    ahocorasick
+    multiprocessing
+    concurrent.futures
+    logging
+    numpy
 
 ## Installation
 
