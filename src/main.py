@@ -21,16 +21,17 @@ if __name__ == "__main__":
   parser.add_argument("-p", "--project", metavar="", required=False, default="brca", help="TCGA Project to download files from")
   parser.add_argument("-t", "--tokenpath", metavar="", required=False, default="token.txt", help="TCGA token file path for restricted data acccess. using token.txt in main folder as default")
   parser.add_argument("-m", "--manifestpath", metavar="", required=False, default="manifest.txt", help="manifest text file containing a list of all file ids to download. using manifest.txt in main folder as default.")
-  
+  parser.add_argument("-o", "--output", metavar="", required=False, help="path for the output file with results. default will be results directory.")
+
   # Set varibles from parser
   args = parser.parse_args()
   filter = args.filter
-  global logpath
   logpath = args.logpath
   download = args.downloadfiles
   global project 
   project = args.project
   file_id = args.filename
+  output = args.output
   
   # Set path to all config/fastq files
   os.makedirs(f"{args.filepath}/{project}", exist_ok=True)  # Create directory only if needed

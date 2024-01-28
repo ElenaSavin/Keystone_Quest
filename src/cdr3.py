@@ -7,7 +7,7 @@ import logging
 
 logger = logging.getLogger('main')
 target_cdr3 = read_sequences_from_csv("top_1000.csv")
-
+found_results = []
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   Initialize process worker
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,6 +67,7 @@ def custom_callback(chunks):
     for chunk in processed_chunk:
       found, read_id, frame, protein_sequence = chunk
       logging.info(f"Target sequence found - {found} in read: {read_id} | Frame: {frame + 1} | Original translated sequence: {protein_sequence}")
+      found_results.append(f"aaSeq")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   End
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
