@@ -41,7 +41,20 @@ chunk_size: Size of chunks to be processed (adjust based on system resources and
 Run the script:
 Bash
 ```
-python process_fastq.py
+usage: main.py [-h] -f  -n  [-fi] [-lp] [-d] [-p] [-t] [-m]
+
+This Python script is designed to efficiently search for target protein sequences within a large FASTQ file.
+
+options:
+  -h, --help            show this help message and exit
+  -f , --filepath       Path to the FASTQ files
+  -n , --filename       File id to download/proccess without ending. mandatory
+  -fi , --filter        Filter the reads before proccessing. true by default.
+  -lp , --logpath       specify custom path for logs. Will be the directory of the script by default
+  -d , --downloadfiles feature flag for downloading files from tcga. false by default, will take files specified in filespath flag.
+  -p , --project        TCGA Project to download files from
+  -t , --tokenpath      TCGA token file path for restricted data acccess. using token.txt in main folder as default
+  -m , --manifestpath   manifest text file containing a list of all file ids to download. using manifest.txt in main folder as default.
 ```
 
 ## Output
