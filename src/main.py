@@ -4,6 +4,7 @@ from cdr3 import process_fastq_file
 from fastq_parser import read_sequences_from_csv
 import argparse
 import logging
+from output import output_summery
 
 if __name__ == "__main__":
   """
@@ -50,5 +51,5 @@ if __name__ == "__main__":
   # if download flag set to true will download from tcga,  otherwisw will go streight to proccess
   if download:    
     import_files(file_path, token_path)
-  process_fastq_file(f"{file_path}.fastq", 4000, filter)
-  
+  process_fastq_file(file_path, 4000, filter)
+  output_summery(file_path)

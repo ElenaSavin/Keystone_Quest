@@ -4,10 +4,15 @@ import ahocorasick
 import multiprocessing
 import concurrent.futures
 import logging
+import numpy as np
+from threading import Lock
+from output import output_csv
 
 logger = logging.getLogger('main')
 target_cdr3 = read_sequences_from_csv("top_1000.csv")
-found_results = []
+manager = multiprocessing.Manager()  # Or use shared memory for performance
+full_results = manager.list()  # Use a list for flexible appends
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   Initialize process worker
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -42,8 +47,8 @@ def process_chunk(read):
     sequence = str(read.seq.reverse_complement())
     for frame, protein_sequence in enumerate(translate_all_orfs_optimized(sequence), start=1):
       for _, found in automaton_protein.iter(str(protein_sequence)):
-        results.append((found, read.id, frame, protein_sequence))
-
+        results.append((found, read.id, frame, sequence))
+        
     return results
 
   except Exception as e:
@@ -57,7 +62,7 @@ def process_chunk(read):
 #   Callback for the thread worker
 # Add lock to write to file 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def custom_callback(chunks):
+def custom_callback(chunks, lock, file_path):
   """callback function for the worker proccess.
 
   Args:
@@ -65,9 +70,12 @@ def custom_callback(chunks):
   """
   for processed_chunk in chunks:
     for chunk in processed_chunk:
-      found, read_id, frame, protein_sequence = chunk
-      logging.info(f"Target sequence found - {found} in read: {read_id} | Frame: {frame + 1} | Original translated sequence: {protein_sequence}")
-      found_results.append(f"aaSeq")
+      found, read_id, frame, read_sequence = chunk
+      logging.info(f"Target sequence found - {found[1]} in read: {read_id} | Frame: {frame + 1} | Original nucleotide sequence: {read_sequence}")
+      data = [found[1], read_id, frame + 1, str(read_sequence)]
+      with lock: #aquiring lock to avoid multithread clash
+        output_csv(file_path, data)
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   End
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -85,12 +93,13 @@ def process_fastq_file(file_path, chunk_size, filter = True):
     filter (bool, optional): weather to use filter. Defaults to True.
   """
   start_time = time.time()
-  total_size = os.path.getsize(file_path)
+  total_size = os.path.getsize(f"{file_path}.fastq")
   bytes_processed = 0
   num_processes = max(os.cpu_count() - 1, 1)
   chunksize = 100
   callback_executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
-
+  lock = Lock()
+  
   if filter == True:
     # ----- Aho–Corasick algorithm init for first parse ------------------------------
     automaton = ahocorasick.Automaton()
@@ -103,10 +112,10 @@ def process_fastq_file(file_path, chunk_size, filter = True):
     # --------------------------------------------------------------------------------
   
   # PHASE 2
-  
-  
+  count = 20
   with multiprocessing.Pool(initializer=init_worker) as pool:
-    for chunk_str in chunked_file_reader(file_path, chunk_size):
+    for chunk_str in chunked_file_reader(f"{file_path}.fastq", chunk_size):
+      count += 1
       try:
         bytes_processed += len(chunk_str.encode('ascii'))
         percentage_read = (bytes_processed / total_size) * 100
@@ -117,9 +126,9 @@ def process_fastq_file(file_path, chunk_size, filter = True):
       filtered_chunk = read_fastq_in_chunks(chunk_str, automaton) #reads from fastq
       if len(filtered_chunk) > 0 :
         result = results = pool.map_async(process_chunk, filtered_chunk, chunksize = chunksize, 
-                                          callback=lambda chunks: callback_executor.submit(custom_callback, chunks))
+                                          callback=lambda chunks: callback_executor.submit(custom_callback, chunks, lock, file_path))
       result.wait()
-    
+      
     pool.close()
     pool.join()
 
