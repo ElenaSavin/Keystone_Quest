@@ -14,20 +14,23 @@ Clear Logging: Provides detailed logging information, including execution time, 
 
 ## Requirements
 
-Python 3.x
-samtools
-
-python libraries:
-    biopython==1.81
-    pyahocorasick==2.0.0
-    numpy==1.23.5
+Python 3.x  
+samtools  
+  
+    
+python libraries:  
+    biopython==1.81  
+    pyahocorasick==2.0.0  
+    numpy==1.23.5  
+    pandas==1.5.3  
+    tqdm==4.64.1    
 
 ## Installation
 
 Install the required Python libraries using pip:
 Bash
 ```
-pip install requirments.txt
+pip install -r requirments.txt
 ```
 Use code with caution. Learn more
 ## Usage

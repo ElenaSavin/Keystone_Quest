@@ -19,7 +19,7 @@ if __name__ == "__main__":
   parser.add_argument("-fi", "--filter", metavar="", required=False, default=True, type=bool, help="Filter the reads before proccessing. true by default.")
   parser.add_argument("-lp", "--logpath", metavar="", required=False, default="proccess.log", help="specify custom path for logs. Will be the directory of the script by default")
   parser.add_argument("-d", "--downloadfiles", metavar="", required=False, default=False, help="feature flag for downloading files from tcga. false by default, will take files specified in filespath flag")
-  parser.add_argument("-p", "--project", metavar="", required=False, default="brca", help="TCGA Project to download files from")
+  parser.add_argument("-p", "--project", metavar="", required=False, default="", help="TCGA Project to download files from")
   parser.add_argument("-t", "--tokenpath", metavar="", required=False, default="token.txt", help="TCGA token file path for restricted data acccess. using token.txt in main folder as default")
   parser.add_argument("-m", "--manifestpath", metavar="", required=False, default="manifest.txt", help="manifest text file containing a list of all file ids to download. using manifest.txt in main folder as default.")
   parser.add_argument("-o", "--output", metavar="", required=False, help="path for the output file with results. default will be results directory.")
