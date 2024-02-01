@@ -18,12 +18,9 @@ Python 3.x
 samtools
 
 python libraries:
-    Biopython
-    ahocorasick
-    multiprocessing
-    concurrent.futures
-    logging
-    numpy
+    biopython==1.81
+    pyahocorasick==2.0.0
+    numpy==1.23.5
 
 ## Installation
 

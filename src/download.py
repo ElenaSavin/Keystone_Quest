@@ -1,12 +1,14 @@
 import logging
 import requests
 import json
+from tqdm import tqdm
 from os import remove, system
 import os
 
 logger = logging.getLogger('main')
+session = requests.Session()
 
-def download(data_endpt, token_string, file_path):
+def download(token_string, file_path, file_id):
   """Downloading BAM file from tcga data portal using the TCGA api.
   Converting to fastq using samtools.
 
@@ -15,17 +17,39 @@ def download(data_endpt, token_string, file_path):
       token_string (str): TCGA NIH token
       file_path (str): path to download the file to.
   """
-  params = {"gencode": ["BRCA1", "BRCA2"]}
-  response = requests.post(data_endpt, 
-                          data = json.dumps(params), 
-                          headers = {
-                            "Content-Type": "application/json",
-                            "X-Auth-Token": token_string
-                            })
-  
-  with open(f"{file_path}.bam", "wb") as output_file:
-    output_file.write(response.content)
-      
+  session = requests.Session()
+
+  base_url = "https://api.gdc.cancer.gov/data/"
+  url = base_url + file_id
+  with open("token.txt","r") as token:
+    token_string = str(token.read().strip())
+    
+  response = session.head(url)
+  try:
+    file_size = int(response.headers['Content-Length'])
+  except KeyError:
+    raise Exception("Unable to retrieve file size for ID: " + file_id)
+
+  response = session.get(url, stream=True, headers = {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token_string
+                        })
+
+  if response.status_code == 200:
+    with open(f"{file_path}.bam", 'wb') as f, tqdm(
+              desc=file_id,
+              total=file_size,
+              unit='iB',
+              unit_scale=True,
+              unit_divisor=1024,
+    ) as bar:
+        for chunk in response.iter_content(chunk_size=1024):
+          size = f.write(chunk)
+          bar.update(size)
+    print(f"File {file_id} downloaded successfully.")
+  else:
+      print(f"Failed to download file. Status code: {response.status_code}")
+
   system(f"samtools bam2fq {file_path}.bam > ${file_path}.fastq")
   
 #read the file ids from file
@@ -37,7 +61,6 @@ def import_files(file_id, file_path, token_file):
     file_path (str): path of the fastq.
     token_file (str): token file path. use for restricted data.
   """
-  data_endpt = f"https://api.gdc.cancer.gov/slicing/view/{file_id}"
   file = f"{file_path}.fastq"
   if os.path.exists(file):
     logging.info(f"File: {file_id} exists, Skipping Download")
@@ -46,7 +69,7 @@ def import_files(file_id, file_path, token_file):
     with open(token_file,"r") as token:
       token_string = str(token.read().strip())
     try:
-      download(data_endpt, token_string, file_path)
+      download(token_string, file_path, file_id)
     except requests.exceptions.ConnectionError as e:
       if "Temporary failure in name resolution" in str(e):
         logging.warning(f"Temporary DNS resolution error. File {file_id} was not downloaded")
