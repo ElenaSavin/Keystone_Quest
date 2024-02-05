@@ -9,7 +9,7 @@ from threading import Lock
 from output import output_csv
 
 logger = logging.getLogger('main')
-target_cdr3 = read_sequences_from_csv("top_1000.csv")
+target_cdr3 = read_sequences_from_csv("cdr3.csv")
 manager = multiprocessing.Manager()  # Or use shared memory for performance
 full_results = manager.list()  # Use a list for flexible appends
 

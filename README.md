@@ -61,8 +61,10 @@ options:
 
 ## Output
 
-The script outputs target sequence matches to the console, logging file, and debugging messages (if enabled).
-Matches include read ID, frame, and original translated sequence.
+The script outputs target sequence matches to the logging file, and debugging messages (if enabled).
+Creates a output file with all sequences found and details on each, and a summery.csv.  
+they will be in the same folder as the RNASeq.  
+Matches include read ID, frame, and original sequence.
 
 ## Additional Notes
 

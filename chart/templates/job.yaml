@@ -1,20 +1,27 @@
+{{- range .Values.uuids }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ $.Release.Name }}-job-{{ .uuid }}
+  name: {{ $.Release.Name }}-job-{{ . }}
 spec:
   template:
     spec:
       containers:
       - name: worker
-        image: your-image:latest
-        command: ["sh", "-c", "echo Processing UUID: {{ .uuid }} && sleep 60"]
+        image: iad.ocir.io/ax5gr8jsnjx1/keystone:latest
+        command: 
+          - python
+          - src/main.py 
+          - -f 
+          - "files" 
+          - --filename 
+          - {{ . }}
+          - -d
+          - "True"
       restartPolicy: OnFailure
   backoffPolicy:
     type: BackoffPeriodic
     periodSeconds: 30
     maxAttempts: 3
 ---
-{{- range .Values.uuids }}
-{{ include "job.yaml" . | indent 2 }}
 {{- end }}

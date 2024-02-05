@@ -49,8 +49,9 @@ def download(token_string, file_path, file_id):
     print(f"File {file_id} downloaded successfully.")
   else:
       print(f"Failed to download file. Status code: {response.status_code}")
-
-  system(f"samtools bam2fq {file_path}.bam > ${file_path}.fastq")
+  
+  logger.info(f"turning {file_path}.bam into {file_path}.fastq")
+  system(f"samtools bam2fq {file_path}.bam > {file_path}.fastq")
   
 #read the file ids from file
 def import_files(file_id, file_path, token_file):

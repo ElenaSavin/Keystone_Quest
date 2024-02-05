@@ -33,7 +33,7 @@ if __name__ == "__main__":
   project = args.project
   file_id = args.filename
   output = args.output
-  
+
   # Set path to all config/fastq files
   os.makedirs(f"{args.filepath}/{project}", exist_ok=True)  # Create directory only if needed
   file_path = f"{args.filepath}/{project}/{file_id}"
@@ -50,6 +50,6 @@ if __name__ == "__main__":
   
   # if download flag set to true will download from tcga,  otherwisw will go streight to proccess
   if download:    
-    import_files(file_path, token_path)
+    import_files(file_id, file_path, token_path)
   process_fastq_file(file_path, 4000, filter)
   output_summery(file_path)
