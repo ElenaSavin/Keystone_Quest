@@ -8,17 +8,14 @@ spec:
     spec:
       containers:
       - name: worker
-        image: iad.ocir.io/ax5gr8jsnjx1/keystone:latest
+        image: iad.ocir.io/ax5gr8jsnjx1/keystone:oci
+        imagePullPolicy: Always
         command: 
-          - python
-          - src/main.py 
-          - -f 
-          - "files" 
-          - --filename 
-          - {{ . }}
-          - -d
-          - "True"
+          - /bin/bash
+          - -c
+        args: ["./run.sh", "{{ . }}"]
       restartPolicy: OnFailure
+      
   backoffPolicy:
     type: BackoffPeriodic
     periodSeconds: 30

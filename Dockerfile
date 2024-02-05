@@ -6,10 +6,17 @@ RUN apt-get update && apt-get install -y \
     samtools curl # Add other system dependencies as needed
 # Set working directory
 WORKDIR /app
-RUN bash -c "$(curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh)" \
-    mkdir /app/.oci
+RUN pip install --upgrade pip && \
+    pip3 install oci-cli
 
-COPY /home/lena/oracle_creds_for_docker/. ./.oci/.
+COPY private.pem .
+# Set environment variables for OCI CLI to use
+ENV OCI_CLI_USER= \
+    OCI_CLI_TENANCY= \
+    OCI_CLI_KEY_FILE=private.pem \
+    OCI_CLI_REGION=us-ashburn-1 \
+    OCI_CLI_FINGERPRINT=
+
 # Create a virtual environment
 RUN python3 -m venv /venv
 ENV PATH="/venv/bin:$PATH"
