@@ -8,17 +8,27 @@ spec:
     spec:
       containers:
       - name: worker
-        image: iad.ocir.io/ax5gr8jsnjx1/keystone:oci
+        image: iad.ocir.io/ax5gr8jsnjx1/keystone:latest
         imagePullPolicy: Always
         command: 
           - /bin/bash
           - -c
-        args: ["./run.sh", "{{ . }}"]
+        args: ["./run.sh"]
+        resources:
+          requests:
+            cpu: 3500m
+            memory: 20Gi
+          limits:
+            cpu: 4000m
+            memory: 25Gi
+        env:
+          - name: FILE_ID
+            value: "{{ . }}"
+          - name: FILE_PATH
+            value: "files"
       restartPolicy: OnFailure
-      
-  backoffPolicy:
-    type: BackoffPeriodic
-    periodSeconds: 30
-    maxAttempts: 3
+      preemptionPolicy: Never
+  backoffLimit: 10
+  ttlSecondsAfterFinished: 0
 ---
 {{- end }}
