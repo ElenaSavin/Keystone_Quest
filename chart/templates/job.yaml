@@ -6,6 +6,7 @@ metadata:
 spec:
   template:
     spec:
+      priorityClassName: non-preempting-priority-class
       containers:
       - name: worker
         image: iad.ocir.io/ax5gr8jsnjx1/keystone:latest
@@ -16,10 +17,10 @@ spec:
         args: ["./run.sh"]
         resources:
           requests:
-            cpu: 3500m
+            cpu: 7000m
             memory: 20Gi
           limits:
-            cpu: 4000m
+            cpu: 7200m
             memory: 25Gi
         env:
           - name: FILE_ID
@@ -27,7 +28,6 @@ spec:
           - name: FILE_PATH
             value: "files"
       restartPolicy: OnFailure
-      preemptionPolicy: Never
   backoffLimit: 10
   ttlSecondsAfterFinished: 0
 ---
