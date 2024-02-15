@@ -116,12 +116,12 @@ def process_fastq_file(file_path, chunk_size, filter = True):
   with multiprocessing.Pool(initializer=init_worker) as pool:
     for chunk_str in chunked_file_reader(f"{file_path}.fastq", chunk_size):
       count += 1
-      try:
-        bytes_processed += len(chunk_str.encode('ascii'))
-        percentage_read = (bytes_processed / total_size) * 100
-        logging.info(f"Processed {percentage_read:.2f}% of the file.")
-      except UnicodeDecodeError as e:
-        logging.warning(f"UnicodeDecodeError encountered: {e}") 
+      # try:
+        # bytes_processed += len(chunk_str.encode('ascii'))
+        # percentage_read = (bytes_processed / total_size) * 100
+        # logging.info(f"Processed {percentage_read:.2f}% of the file.")
+      # except UnicodeDecodeError as e:
+      #   logging.warning(f"UnicodeDecodeError encountered: {e}") 
       
       filtered_chunk = read_fastq_in_chunks(chunk_str, automaton) #reads from fastq
       if len(filtered_chunk) > 0 :

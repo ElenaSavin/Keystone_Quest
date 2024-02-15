@@ -1,34 +1,53 @@
 {{- range .Values.uuids }}
 apiVersion: batch/v1
-kind: Job
+kind: CronJob
 metadata:
-  name: {{ $.Release.Name }}-job-{{ . }}
+  name: {{ . }}
 spec:
-  template:
+  schedule: "* * * * *"
+  suspend: true 
+  jobTemplate:
     spec:
-      priorityClassName: non-preempting-priority-class
-      containers:
-      - name: worker
-        image: iad.ocir.io/ax5gr8jsnjx1/keystone:latest
-        imagePullPolicy: Always
-        command: 
-          - /bin/bash
-          - -c
-        args: ["./run.sh"]
-        resources:
-          requests:
-            cpu: 7000m
-            memory: 20Gi
-          limits:
-            cpu: 7200m
-            memory: 25Gi
-        env:
-          - name: FILE_ID
-            value: "{{ . }}"
-          - name: FILE_PATH
-            value: "files"
-      restartPolicy: OnFailure
-  backoffLimit: 10
-  ttlSecondsAfterFinished: 0
+      template:
+        metadata:
+          labels:
+            app: "keystone"
+        spec:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - "keystone" # Ensure this label uniquely identifies your job pods
+                topologyKey: "kubernetes.io/hostname"
+          containers:
+          - name: worker
+            image: iad.ocir.io/ax5gr8jsnjx1/keystone:latest
+            imagePullPolicy: Always
+            command: 
+              - /bin/bash
+              - -c
+            args: 
+              - sh ./run.sh
+            resources:
+              requests:
+                cpu: 7000m
+                memory: 20Gi
+                ephemeral-storage: "15Gi"
+              limits:
+                cpu: 7200m
+                memory: 25Gi
+                ephemeral-storage: "18Gi"
+            env:
+              - name: FILE_ID
+                value: "{{ . }}"
+              - name: FILE_PATH
+                value: "files"
+          restartPolicy: OnFailure
+      backoffLimit: 10
+      ttlSecondsAfterFinished: 0
 ---
 {{- end }}

@@ -11,11 +11,9 @@ RUN pip install --upgrade pip && \
 
 COPY private.pem .
 # Set environment variables for OCI CLI to use
-ENV OCI_CLI_USER= \
-    OCI_CLI_TENANCY= \
-    OCI_CLI_KEY_FILE=private.pem \
-    OCI_CLI_REGION=us-ashburn-1 \
-    OCI_CLI_FINGERPRINT=
+ENV AWS_ACCESS_KEY_ID= \
+    AWS_SECRET_ACCESS_KEY=  \
+    AWS_DEFAULT_REGION=us-east-1
 
 # Create a virtual environment
 RUN python3 -m venv /venv
