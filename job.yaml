@@ -31,29 +31,26 @@ spec:
               - /bin/bash
               - -c
             args: 
-              - sh ./run.sh
+              - python 
+              - src/main.py 
+              - -f 
+              - files 
+              - --filename 
+              - "{{ . }}" 
+              - -d
+              - "true"
             resources:
               requests:
-                cpu: 7000m
-                memory: 30Gi
-                ephemeral-storage: "30G"
+                cpu: 14000m
+                memory: 23Gi
               limits:
-                cpu: 7200m
-                memory: 35Gi
+                cpu: 15000m
+                memory: 25Gi
             env:
               - name: FILE_ID
                 value: "{{ . }}"
               - name: FILE_PATH
                 value: "files"
-            volumeMounts:
-              - name: script-volume
-                mountPath: /app/run.sh
-                subPath: run.sh
-          volumes:
-            - name: script-volume
-              configMap:
-                name: script-config
-        
           restartPolicy: OnFailure
       backoffLimit: 10
       ttlSecondsAfterFinished: 0

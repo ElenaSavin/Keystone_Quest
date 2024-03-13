@@ -71,3 +71,11 @@ Matches include read ID, frame, and original sequence.
 Consider adjusting the chunk_size and num_processes parameters to fine-tune performance for different file sizes and hardware configurations.
 For large FASTQ files, ensure adequate system resources (CPU cores and RAM) to handle the multiprocessing workload.
 The script employs a thread pool for callbacks using concurrent.futures to streamline the output of results.
+
+## Adding mount
+```
+#!/bin/bash
+curl --fail -H "Authorization: Bearer Oracle" -L0 http://169.254.169.254/opc/v2/instance/metadata/oke_init_script | base64 --decode >/var/run/oke-init.sh
+bash /var/run/oke-init.sh
+sudo /usr/libexec/oci-growfs -y
+```

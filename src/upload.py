@@ -1,7 +1,7 @@
 import logging
 import boto3
 from botocore.exceptions import ClientError
-import os
+import os, csv
 
 
 def upload_file(file_name, bucket="keystone-quest", object_name=None):
@@ -26,3 +26,9 @@ def upload_file(file_name, bucket="keystone-quest", object_name=None):
         logging.error(e)
         return False
     return True
+
+def upload_runtime(elapsed_time, file_path):
+    with open(f"{file_path}_runtime.csv", 'a') as csvfile:
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerow(elapsed_time)   # Write the data rows
+    upload_file(f"{file_path}_runtime.csv")
